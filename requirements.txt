@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+postgrest
+sentence-transformers
+pydantic
+pydantic-settings
+python-dotenv
+numpy
+httpx
+cachetools

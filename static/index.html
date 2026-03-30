@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI FAQ System</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; background-color: #f4f7f6; color: #333; margin: 0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        h1 { color: #1a1a1a; margin-top: 0; }
+        .instructions { line-height: 1.6; color: #555; margin-bottom: 30px; }
+        .faq-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .faq-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .faq-card:hover { border-color: #4a90e2; background: #ebf4fc; transform: translateY(-2px); }
+        .faq-card strong { display: block; color: #4a90e2; font-size: 14px; margin-bottom: 5px; }
+        .loading { font-style: italic; color: #888; }
+        @media (max-width: 600px) {
+            .faq-list { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Mental Health AI Assistant</h1>
+        <div class="instructions">
+            <p>Welcome to our enterprise RAG demonstration. This system is trained on our verified psychology knowledge base.</p>
+            <p>You can interact with the floating chat widget in the bottom right corner. To test the system, try asking one of the questions below, or rephrase it entirely to test the AI's semantic search!</p>
+        </div>
+
+        <h3>Sample Questions You Can Ask:</h3>
+        <div id="loading-faqs" class="loading">Loading knowledge base topics...</div>
+        <ul id="faq-list" class="faq-list"></ul>
+    </div>
+
+    <!-- Inject the floating chat widget -->
+    <script src="/static/widget.js"></script>
+
+    <script>
+        // Fetch FAQs and display them dynamically
+        async function loadFAQs() {
+            try {
+                const response = await fetch('/admin/faqs');
+                if (!response.ok) throw new Error("Failed to fetch FAQs");
+                
+                const faqs = await response.json();
+                const list = document.getElementById('faq-list');
+                const loading = document.getElementById('loading-faqs');
+                
+                loading.style.display = 'none';
+                
+                faqs.forEach(faq => {
+                    const li = document.createElement('li');
+                    li.className = 'faq-card';
+                    li.innerHTML = `<strong>Ask about:</strong> ${faq.question}`;
+                    
+                    // Allow user to click the card to auto-fill the chat widget
+                    li.onclick = () => {
+                        const input = document.getElementById('faq-widget-input');
+                        const widgetWindow = document.getElementById('faq-widget-window');
+                        
+                        if (input) {
+                            widgetWindow.style.display = 'flex'; // Open widget
+                            input.value = faq.question; // Pre-fill input
+                            input.focus(); // Focus input
+                        }
+                    };
+                    
+                    list.appendChild(li);
+                });
+            } catch (err) {
+                console.error("Error loading FAQs:", err);
+                document.getElementById('loading-faqs').innerText = "Unable to load topics at this time.";
+            }
+        }
+
+        // Run on load
+        window.onload = loadFAQs;
+    </script>
+</body>
+</html>
